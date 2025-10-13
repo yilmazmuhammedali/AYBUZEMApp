@@ -150,13 +150,7 @@ init_db()
 
 # --- Streamlit Arayüzü ---
 st.set_page_config(layout="wide")
-if 'students_loaded' not in st.session_state:
-    try:
-        load_students_from_excel()
-        st.session_state.students_loaded = True
-        print("Öğrenci verileri başarıyla yüklendi.") # Hata ayıklama için
-    except Exception as e:
-        st.error(f"Veriler yüklenirken bir hata oluştu: {e}")
+
 st.markdown(
     """
     <style>
@@ -285,8 +279,4 @@ else:
                     st.success(t("evaluation_success_message"))
                     st.balloons()
                     time.sleep(2)
-<<<<<<< HEAD
-=======
-                    st.session_state.student_info = None
->>>>>>> b6074fd65cd5a65bc9df51c8b4f51e9a595e5daf
                     st.rerun()
