@@ -75,7 +75,7 @@ translations = {
 # --- Ayarlar ---
 DB_FILE = "medicine_survey.sqlite"
 ADMIN_PASSWORD = "aybubio2025"
-EXCEL_FILE_PATH = r'Groups.xlsx'
+EXCEL_FILE_PATH = "https://github.com/yilmazmuhammedali/AYBUZEMApp/blob/main/TR-Tip/Groups.xlsx"
 
 # --- Veritabanı Fonksiyonları (Değişiklik yok) ---
 def get_db_connection():
