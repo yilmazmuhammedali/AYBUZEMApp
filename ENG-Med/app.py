@@ -103,15 +103,15 @@ def t(key, **kwargs):
 
 
 def load_students_from_excel():
-            df = pd.read_excel("https://raw.githubusercontent.com/yilmazmuhammedali/AYBUZEMApp/main/ENG-Med/Groups.xlsx")
-            required_columns = ['student_no', 'fullname', 'group_name']
-            if not all(col in df.columns for col in required_columns):
+    df = pd.read_excel("https://raw.githubusercontent.com/yilmazmuhammedali/AYBUZEMApp/main/ENG-Med/Groups.xlsx")
+    required_columns = ['student_no', 'fullname', 'group_name']
+    if not all(col in df.columns for col in required_columns):
                 # Hata mesajını t() fonksiyonu ile alıyoruz
-                st.error(t("excel_column_error", columns=required_columns))
-                return False
-            conn = get_db_connection()
-            df.to_sql('ogrenciler', conn, if_exists='replace', index=False, dtype={'student_no': 'TEXT'})
-            conn.close()
+        st.error(t("excel_column_error", columns=required_columns))
+        return False
+    conn = get_db_connection()
+    df.to_sql('ogrenciler', conn, if_exists='replace', index=False, dtype={'student_no': 'TEXT'})
+    conn.close()
 
 # Diğer veritabanı fonksiyonları (check_if_evaluated, get_student_info vb.) aynı kalır
 def check_if_evaluated(student_no):
@@ -165,7 +165,7 @@ st.markdown(
 # --- 3. DİL SEÇİMİ VE DURUM YÖNETİMİ ---
 # Varsayılan dil 'tr' olarak ayarlanır
 if 'lang' not in st.session_state:
-    st.session_state.lang = 'tr'
+    st.session_state.lang = 'en'
 
 # Arayüzdeki tüm metinler artık t() fonksiyonu ile çağrılıyor
 st.title(t("app_title"))
