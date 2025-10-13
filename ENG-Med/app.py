@@ -3,20 +3,16 @@ import pandas as pd
 import sqlite3
 from datetime import datetime
 import os
-import io
 import time
 
-# --- 1. METİN SÖZLÜĞÜ OLUŞTURMA ---
-# Tüm arayüz metinlerini buraya ekliyoruz. Yeni bir dil eklemek için
-# sadece bu sözlüğe yeni bir anahtar (örn: 'de' for German) eklemek yeterlidir.
+# --- METİN SÖZLÜĞÜ (değişiklik yok) ---
 translations = {
     "tr": {
         "app_title": """
-                      AYBÜ Biyoistatistik Dersi
+                     # AYBÜ Biyoistatistik Dersi
                      ## Grup İçi Akran Değerlendirme Sistemi
                      """,
         "language_select_label": "Dil / Language",
-        # Yönetici Paneli
         "admin_panel_title": "Yönetici Paneli",
         "admin_logged_in": "Yönetici olarak giriş yapıldı.",
         "refresh_data_button": "Verileri Yenile",
@@ -24,7 +20,6 @@ translations = {
         "admin_password_label": "Yönetici Şifresi:",
         "login_button": "Giriş Yap",
         "wrong_password_error": "Şifre yanlış!",
-        # Öğrenci Paneli
         "student_id_prompt": "Lütfen Öğrenci Numaranızı Girin:",
         "continue_button": "Devam Et",
         "student_not_found_error": "Bu öğrenci numarası sistemde kayıtlı değil.",
@@ -37,18 +32,16 @@ translations = {
         "comment_label": "Yorum (isteğe bağlı):",
         "comment_placeholder": "{name} hakkındaki yorumlarınız...",
         "submit_button": "Değerlendirmeleri Gönder",
-        "evaluation_success_message": "Değerlendirmeleriniz başarıyla kaydedildi!",
-        # Sistem Hataları
+        "evaluation_success_message": "Değerlendirmeleriniz başarıyla kaydedildi! Ana ekrana yönlendiriliyorsunuz...",
         "excel_file_error": "Lütfen uygulama klasörüne '{file}' dosyasını ekleyin.",
         "excel_column_error": "Excel dosyasında gerekli sütunlar bulunamadı! Lütfen şu sütunların olduğundan emin olun: {columns}"
     },
     "en": {
         "app_title": """
-                      AYBU Biostatistics Course
+                     # AYBU Biostatistics Course
                      ## Peer Assessment System for Groups
                      """,
         "language_select_label": "Dil / Language",
-        # Admin Panel
         "admin_panel_title": "Admin Panel",
         "admin_logged_in": "Logged in as admin.",
         "refresh_data_button": "Refresh Data",
@@ -56,7 +49,6 @@ translations = {
         "admin_password_label": "Admin Password:",
         "login_button": "Login",
         "wrong_password_error": "Wrong password!",
-        # Student Panel
         "student_id_prompt": "Please Enter Your Student ID:",
         "continue_button": "Continue",
         "student_not_found_error": "This student ID is not registered in the system.",
@@ -69,18 +61,18 @@ translations = {
         "comment_label": "Comment (optional):",
         "comment_placeholder": "Your comments about {name}...",
         "submit_button": "Submit Evaluations",
-        "evaluation_success_message": "Your evaluations have been saved successfully!",
-        # System Errors
+        "evaluation_success_message": "Your evaluations have been saved successfully! Redirecting to the main screen...",
         "excel_file_error": "Please add the '{file}' file to the application folder.",
         "excel_column_error": "Required columns not found in the Excel file! Please ensure the following columns exist: {columns}"
     }
 }
 
+
 # --- Ayarlar ---
 DB_FILE = "medicine_survey.sqlite"
 ADMIN_PASSWORD = "aybubio2025"
 
-# --- Veritabanı Fonksiyonları (Değişiklik yok) ---
+# --- Veritabanı Fonksiyonları ---
 def get_db_connection():
     conn = sqlite3.connect(DB_FILE)
     conn.row_factory = sqlite3.Row
@@ -93,27 +85,32 @@ def init_db():
     conn.commit()
     conn.close()
     
-# --- 4. YARDIMCI FONKSİYON ---
-# Bu fonksiyon, seçili dile göre doğru metni döndürecek.
+# --- Yardımcı Fonksiyonlar ---
 def t(key, **kwargs):
-    # Eğer session_state'de dil tanımlı değilse, varsayılan olarak 'tr' kullan
     lang = st.session_state.get('lang', 'tr')
-    # Sözlükten metni al ve formatla (örn: {name})
     return translations[lang][key].format(**kwargs)
 
-
+# --- DEĞİŞİKLİK BURADA: Fonksiyon daha sağlam hale getirildi ---
 def load_students_from_excel():
-    df = pd.read_excel("https://raw.githubusercontent.com/yilmazmuhammedali/AYBUZEMApp/main/ENG-Med/Groups.xlsx")
-    required_columns = ['student_no', 'fullname', 'group_name']
-    if not all(col in df.columns for col in required_columns):
-                # Hata mesajını t() fonksiyonu ile alıyoruz
-        st.error(t("excel_column_error", columns=required_columns))
-        return False
-    conn = get_db_connection()
-    df.to_sql('ogrenciler', conn, if_exists='replace', index=False, dtype={'student_no': 'TEXT'})
-    conn.close()
+    try:
+        df = pd.read_excel("https://raw.githubusercontent.com/yilmazmuhammedali/AYBUZEMApp/main/ENG-Med/Groups.xlsx")
+        
+        # Öğrenci numaralarını metin (string) olarak ele al
+        df['student_no'] = df['student_no'].astype(str)
 
-# Diğer veritabanı fonksiyonları (check_if_evaluated, get_student_info vb.) aynı kalır
+        required_columns = ['student_no', 'fullname', 'group_name']
+        if not all(col in df.columns for col in required_columns):
+            st.error(t("excel_column_error", columns=required_columns))
+            return False
+        conn = get_db_connection()
+        df.to_sql('ogrenciler', conn, if_exists='replace', index=False, dtype={'student_no': 'TEXT'})
+        conn.close()
+        return True # Başarılı olursa True döndür
+    except Exception as e:
+        st.error(f"Excel verileri okunurken veya işlenirken bir hata oluştu: {e}")
+        return False # Başarısız olursa False döndür
+
+# Diğer veritabanı fonksiyonları
 def check_if_evaluated(student_no):
     conn = get_db_connection()
     result = conn.execute('SELECT 1 FROM degerlendirmeler WHERE evaluator_no = ? LIMIT 1', (str(student_no),)).fetchone()
@@ -148,6 +145,14 @@ def get_all_evaluations():
 # --- Uygulama Başlangıcı ---
 init_db()
 
+# --- DEĞİŞİKLİK BURADA: Veri yükleme fonksiyonu çağrılıyor ---
+if 'students_loaded' not in st.session_state:
+    if load_students_from_excel():
+        st.session_state.students_loaded = True
+    else:
+        st.error("Öğrenci verileri yüklenemediği için uygulama durduruldu.")
+        st.stop()
+
 # --- Streamlit Arayüzü ---
 st.set_page_config(layout="wide")
 
@@ -162,13 +167,10 @@ st.markdown(
     unsafe_allow_html=True,
 )
 
-# --- 3. DİL SEÇİMİ VE DURUM YÖNETİMİ ---
-# Varsayılan dil 'tr' olarak ayarlanır
 if 'lang' not in st.session_state:
     st.session_state.lang = 'en'
 
-# Arayüzdeki tüm metinler artık t() fonksiyonu ile çağrılıyor
-st.title(t("app_title"))
+st.markdown(t("app_title"), unsafe_allow_html=True)
 
 if 'admin_authenticated' not in st.session_state:
     st.session_state.admin_authenticated = False
@@ -177,21 +179,17 @@ if 'student_info' not in st.session_state:
 
 # --- Yönetici ve Dil Seçim Paneli ---
 with st.sidebar:
-    # Dil seçimi selectbox'ı
     selected_lang = st.selectbox(
         label=t('language_select_label'), 
         options=['tr', 'en'], 
         format_func=lambda x: "Türkçe" if x == 'tr' else "English",
-        key='lang' # session_state ile doğrudan bağlantı
+        key='lang'
     )
-
     st.title(t("admin_panel_title"))
     if st.session_state.admin_authenticated:
         st.success(t("admin_logged_in"))
-        
         if st.button(t("refresh_data_button")):
             st.rerun()
-
         st.header(t("all_evaluations_header"))
         all_evaluations = get_all_evaluations()
         st.dataframe(all_evaluations)
@@ -204,7 +202,7 @@ with st.sidebar:
             else:
                 st.error(t("wrong_password_error"))
 
-
+# --- ÖĞRENCİ GİRİŞ EKRANI ---
 if st.session_state.student_info is None:
     student_no_input = st.text_input(t("student_id_prompt"), key="student_login_input")
     if st.button(t("continue_button")):
@@ -218,6 +216,7 @@ if st.session_state.student_info is None:
         else:
             st.warning(t("enter_student_id_warning"))
 else:
+    # --- DEĞERLENDİRME EKRANI ---
     student = st.session_state.student_info
     st.success(t("welcome_message", name=student['fullname'], group=student['group_name']))
     
@@ -241,15 +240,12 @@ else:
                 for member in group_members:
                     st.markdown("---")
                     col1, col2 = st.columns([1, 2])
-
                     with col1:
                         st.markdown(f"#### {member['fullname']}")
                         st.caption(f"({member['student_no']})")
-
                     with col2:
                         puan_key = f"puan_{member['student_no']}"
                         yorum_key = f"yorum_{member['student_no']}"
-                        
                         st.radio(
                             "Puan:",
                             options=list(range(1, 11)),
@@ -257,7 +253,6 @@ else:
                             horizontal=True,
                             label_visibility="collapsed"
                         )
-                        
                         st.text_area(
                             t("comment_label"),
                             key=yorum_key,
@@ -278,6 +273,6 @@ else:
                         )
                     st.success(t("evaluation_success_message"))
                     st.balloons()
-                    time.sleep(2)
+                    time.sleep(3)
                     st.session_state.student_info = None
                     st.rerun()
