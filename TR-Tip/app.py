@@ -285,4 +285,8 @@ else:
                     st.success(t("evaluation_success_message"))
                     st.balloons()
                     time.sleep(2)
+<<<<<<< HEAD
+=======
+                    st.session_state.student_info = None
+>>>>>>> b6074fd65cd5a65bc9df51c8b4f51e9a595e5daf
                     st.rerun()
