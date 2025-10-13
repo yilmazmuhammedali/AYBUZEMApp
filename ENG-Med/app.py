@@ -171,7 +171,7 @@ st.markdown(
 # --- 3. DİL SEÇİMİ VE DURUM YÖNETİMİ ---
 # Varsayılan dil 'tr' olarak ayarlanır
 if 'lang' not in st.session_state:
-    st.session_state.lang = 'tr'
+    st.session_state.lang = 'en'
 
 # Arayüzdeki tüm metinler artık t() fonksiyonu ile çağrılıyor
 st.title(t("app_title"))
