@@ -103,7 +103,7 @@ def t(key, **kwargs):
 
 
 def load_students_from_excel():
-            df = pd.read_excel("https://raw.githubusercontent.com/yilmazmuhammedali/AYBUZEMApp/main/TR-Tip/Groups.xlsx")
+            df = pd.read_excel("https://raw.githubusercontent.com/yilmazmuhammedali/AYBUZEMApp/main/ENG-MED/Groups.xlsx")
             required_columns = ['student_no', 'fullname', 'group_name']
             if not all(col in df.columns for col in required_columns):
                 # Hata mesajını t() fonksiyonu ile alıyoruz
@@ -165,7 +165,7 @@ st.markdown(
 # --- 3. DİL SEÇİMİ VE DURUM YÖNETİMİ ---
 # Varsayılan dil 'tr' olarak ayarlanır
 if 'lang' not in st.session_state:
-    st.session_state.lang = 'tr'
+    st.session_state.lang = 'en'
 
 # Arayüzdeki tüm metinler artık t() fonksiyonu ile çağrılıyor
 st.title(t("app_title"))
