@@ -11,7 +11,10 @@ import time
 # sadece bu sözlüğe yeni bir anahtar (örn: 'de' for German) eklemek yeterlidir.
 translations = {
     "tr": {
-        "app_title": "Grup İçi Akran Değerlendirme Sistemi",
+        "app_title": """
+                      AYBÜ Biyoistatistik Dersi
+                     ## Grup İçi Akran Değerlendirme Sistemi
+                     """,
         "language_select_label": "Dil / Language",
         # Yönetici Paneli
         "admin_panel_title": "Yönetici Paneli",
@@ -22,7 +25,6 @@ translations = {
         "login_button": "Giriş Yap",
         "wrong_password_error": "Şifre yanlış!",
         # Öğrenci Paneli
-        "student_panel_header": "Öğrenci Paneli",
         "student_id_prompt": "Lütfen Öğrenci Numaranızı Girin:",
         "continue_button": "Devam Et",
         "student_not_found_error": "Bu öğrenci numarası sistemde kayıtlı değil.",
@@ -41,7 +43,10 @@ translations = {
         "excel_column_error": "Excel dosyasında gerekli sütunlar bulunamadı! Lütfen şu sütunların olduğundan emin olun: {columns}"
     },
     "en": {
-        "app_title": "Peer Assessment System for Groups",
+        "app_title": """
+                      AYBU Biostatistics Course
+                     ## Peer Assessment System for Groups
+                     """,
         "language_select_label": "Dil / Language",
         # Admin Panel
         "admin_panel_title": "Admin Panel",
@@ -52,7 +57,6 @@ translations = {
         "login_button": "Login",
         "wrong_password_error": "Wrong password!",
         # Student Panel
-        "student_panel_header": "Student Panel",
         "student_id_prompt": "Please Enter Your Student ID:",
         "continue_button": "Continue",
         "student_not_found_error": "This student ID is not registered in the system.",
@@ -75,7 +79,6 @@ translations = {
 # --- Ayarlar ---
 DB_FILE = "medicine_survey.sqlite"
 ADMIN_PASSWORD = "aybubio2025"
-EXCEL_FILE_PATH = r"Groups.xlsx"
 
 # --- Veritabanı Fonksiyonları (Değişiklik yok) ---
 def get_db_connection():
@@ -100,23 +103,15 @@ def t(key, **kwargs):
 
 
 def load_students_from_excel():
-    if os.path.exists(EXCEL_FILE_PATH):
-        try:
-            df = pd.read_excel(EXCEL_FILE_PATH)
+            df = pd.read_excel("https://raw.githubusercontent.com/yilmazmuhammedali/AYBUZEMApp/main/TR-Tip/Groups.xlsx")
             required_columns = ['student_no', 'fullname', 'group_name']
             if not all(col in df.columns for col in required_columns):
                 # Hata mesajını t() fonksiyonu ile alıyoruz
                 st.error(t("excel_column_error", columns=required_columns))
                 return False
-            
             conn = get_db_connection()
             df.to_sql('ogrenciler', conn, if_exists='replace', index=False, dtype={'student_no': 'TEXT'})
             conn.close()
-            return True
-        except Exception as e:
-            st.error(f"Excel file read error: {e}")
-            return False
-    return False
 
 # Diğer veritabanı fonksiyonları (check_if_evaluated, get_student_info vb.) aynı kalır
 def check_if_evaluated(student_no):
@@ -152,15 +147,26 @@ def get_all_evaluations():
 
 # --- Uygulama Başlangıcı ---
 init_db()
-if 'students_loaded' not in st.session_state:
-    if load_students_from_excel():
-        st.session_state.students_loaded = True
-    else:
-        st.error(t("excel_file_error", file=EXCEL_FILE_PATH))
-        st.stop()
 
 # --- Streamlit Arayüzü ---
 st.set_page_config(layout="wide")
+if 'students_loaded' not in st.session_state:
+    try:
+        load_students_from_excel()
+        st.session_state.students_loaded = True
+        print("Öğrenci verileri başarıyla yüklendi.") # Hata ayıklama için
+    except Exception as e:
+        st.error(f"Veriler yüklenirken bir hata oluştu: {e}")
+st.markdown(
+    """
+    <style>
+        [data-testid="stSidebar"] {
+            width: 500px !important;
+        }
+    </style>
+    """,
+    unsafe_allow_html=True,
+)
 
 # --- 3. DİL SEÇİMİ VE DURUM YÖNETİMİ ---
 # Varsayılan dil 'tr' olarak ayarlanır
@@ -204,8 +210,6 @@ with st.sidebar:
             else:
                 st.error(t("wrong_password_error"))
 
-# --- Öğrenci Paneli ---
-st.header(t("student_panel_header"))
 
 if st.session_state.student_info is None:
     student_no_input = st.text_input(t("student_id_prompt"), key="student_login_input")
