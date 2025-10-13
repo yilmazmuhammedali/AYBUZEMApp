@@ -73,8 +73,8 @@ translations = {
 }
 
 # --- Ayarlar ---
-DB_FILE = "gelismis_anket.sqlite"
-ADMIN_PASSWORD = "admin123"
+DB_FILE = "medicine_survey.sqlite"
+ADMIN_PASSWORD = "aybubio2025"
 EXCEL_FILE_PATH = r'TR Tıp Gruplar.xlsx'
 
 # --- Veritabanı Fonksiyonları (Değişiklik yok) ---
