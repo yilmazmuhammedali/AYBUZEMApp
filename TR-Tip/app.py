@@ -147,6 +147,7 @@ def get_all_evaluations():
 
 # --- Uygulama Başlangıcı ---
 init_db()
+load_students_from_excel()
 
 # --- Streamlit Arayüzü ---
 st.set_page_config(layout="wide")
