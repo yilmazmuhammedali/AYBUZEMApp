@@ -103,7 +103,7 @@ def t(key, **kwargs):
 
 
 def load_students_from_excel():
-            df = pd.read_excel("https://raw.githubusercontent.com/yilmazmuhammedali/AYBUZEMApp/main/TR-Tip/Groups.xlsx")
+            df = pd.read_excel("https://raw.githubusercontent.com/yilmazmuhammedali/AYBUZEMApp/main/TR-Tip/GroupsTR.xlsx")
             required_columns = ['student_no', 'fullname', 'group_name']
             if not all(col in df.columns for col in required_columns):
                 # Hata mesajını t() fonksiyonu ile alıyoruz
